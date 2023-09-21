@@ -1,6 +1,7 @@
 import gym 
 from gym import spaces
 import numpy as np
+import random
 #from gym_gato.envs.gato import Gato
 
 class GatoEnv(gym.Env):
@@ -8,34 +9,50 @@ class GatoEnv(gym.Env):
         # Definir el espacio de observación y de acción
         self.board = np.zeros((3, 3), dtype=int)  # Tablero 3x3
         self.action_space = spaces.Discrete(9)    # 9 posiciones para marcar
-        self.observation_space = spaces.Box(low=0, high=1, shape=(3, 3), dtype=int)
-
-        self.current_player = 1  # Jugador 1 comienza
+        self.observation_space = spaces.Box(low=0, high=2, shape=(3, 3), dtype=int)
         self.winner = None
 
     
     def reset(self):
         self.board = np.zeros((3, 3), dtype=int)
-        self.current_player = 1
         self.winner = None
         return self.board
+    def aviable_mov(self):
+        L=[]
+        for i in range(3):
+            for j in range(3):
+                if self.board[i,j]==0:
+                    L.append((i,j))
+        return L
 
-    def step(self, action):
+
+    def step(self, action, mode = 'random'):
+
         row, col = action // 3, action % 3
 
         if self.board[row, col] != 0:
             return self.board, -10, False, {}  # Movimiento inválido, penalización
+        self.board[row, col] = 1
 
-        self.board[row, col] = self.current_player
+        if mode == 'random':
+            if self.aviable_mov() != []:
+                rowo, colo = random.choice(self.aviable_mov())
+                self.board[rowo,colo]=2
+        elif mode == 'human':
+            accion=int(input('ingrese movimiento'))
+            row, col = accion // 3, accion % 3
+            self.board[row, col] = 2
 
-        if self._check_winner(self.current_player):
-            self.winner = self.current_player
+        if self._check_winner(1):
+            self.winner = 1
             return self.board, 1, True, {}
+        if self._check_winner(2):
+            self.winner = 2
+            return self.board, -1, True, {}
 
         if np.all(self.board != 0):
             return self.board, 0, True, {}  # Empate
 
-        self.current_player = 3 - self.current_player  # Alternar jugadores
         return self.board, 0, False, {}
 
     def render(self, mode='human'):

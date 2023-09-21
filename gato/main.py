@@ -37,11 +37,9 @@ while done==False:
   print("Step {}".format(c + 1))
   c=c+1
   print("Action: ", action)
-  obs, reward, done, info = env.step(action)
+  obs, reward, done, info = env.step(action, mode='human')
   print('obs=', obs, 'reward=', reward, 'done=', done)
   env.render(mode='console')
-  action2=int(input('ingrese el movimiento'))
-  obs, reward, done, info = env.step(action2)
   if done:
     # Note that the VecEnv resets automatically
     # when a done signal is encountered
